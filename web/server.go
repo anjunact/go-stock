@@ -1,8 +1,6 @@
 package main
 
 import (
-	//"net/http"
-
 	"github.com/labstack/echo"
 	"net/http"
 	"io"
@@ -10,8 +8,8 @@ import (
 	"github.com/anjunact/go-stock/models"
 	"github.com/labstack/gommon/log"
 	"path/filepath"
-	"fmt"
 	"strconv"
+	"fmt"
 )
 type CustomContext struct {
 	echo.Context
@@ -32,10 +30,28 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
+var templates map[string]*template.Template
+func init() {
+	if templates == nil {
+		templates = make(map[string]*template.Template)
+	}
+	templatesDir := "./templates/"
+	layouts, err := filepath.Glob(templatesDir + "layouts/*.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	widgets, err := filepath.Glob(templatesDir + "widgets/*.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, layout := range layouts {
+		files := append(widgets, layout)
+		templates[filepath.Base(layout)] = template.Must(template.ParseFiles(files...))
+	}
+	fmt.Println(layouts)
+}
 func main() {
 	rootPath,_:=  filepath.Abs(".")
-	fmt.Println("==="+rootPath)
-
 	e := echo.New()
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -51,13 +67,13 @@ func main() {
 	})
 
 	t := &Template{
-		templates: template.Must(template.ParseGlob(rootPath+"/web/public/views/*.html")),
+		templates: template.Must(template.ParseGlob(rootPath+"/templates/*.html")),
 	}
 	e.Renderer = t
 	e.GET("/stocks/:page", Stocks)
 
-	e.Static("/static", rootPath+"/web/assets")
-
+	e.Static("/static", rootPath+"/public")
+	e.File("/",rootPath+"/public/index.html")
 	e.Logger.Fatal(e.Start(":1323"))
 }
 func Stocks(c echo.Context) error {
