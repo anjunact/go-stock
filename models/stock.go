@@ -24,8 +24,9 @@ func  init()  {
 		panic(err)
 	}
 }
-func Stocks(limit int) (stocks []Stock, err error) {
-	rows, err := Db.Query("select id, content, author from stocks limit $1", limit)
+func Stocks(page int,pageSize int) (stocks []Stock, err error) {
+	offset := page*pageSize
+	rows, err := Db.Query("select id, name,code,price,updated from stocks limit $1 offset $2", pageSize,offset)
 	if err != nil {
 		return
 	}

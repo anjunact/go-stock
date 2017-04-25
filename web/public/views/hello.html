@@ -1,0 +1,13 @@
+{{define "stocks"}}
+<table border="1 solid #ccc">
+
+    <tr>
+        <td></td> <td>ID</td><td>name</td><td>code</td><td>price</td><td>updated</td>
+    </tr>
+{{ range $k, $v := . }}
+    <tr>
+        <td>{{ $k }}</td> <td>{{ $v.Id }}</td><td>{{ $v.Name }}</td><td>{{ $v.Code }}</td><td>{{ $v.Price }}</td><td>{{ $v.Updated }}</td>
+    </tr>
+{{ end }}
+</table>
+{{end}}
