@@ -1,16 +1,18 @@
 package main
 
 import (
-	"github.com/labstack/echo"
-	"net/http"
-	"io"
+	"fmt"
 	"html/template"
-	"github.com/anjunact/go-stock/models"
-	"github.com/labstack/gommon/log"
+	"io"
+	"net/http"
 	"path/filepath"
 	"strconv"
-	"fmt"
+
+	"github.com/anjunact/go-stock/models"
+	"github.com/labstack/echo"
+	"github.com/labstack/gommon/log"
 )
+
 type CustomContext struct {
 	echo.Context
 }
@@ -22,6 +24,7 @@ func (c *CustomContext) Foo() {
 func (c *CustomContext) Bar() {
 	println("bar")
 }
+
 type Template struct {
 	templates *template.Template
 }
@@ -31,15 +34,18 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 }
 
 var templates map[string]*template.Template
+
 func init() {
 	if templates == nil {
 		templates = make(map[string]*template.Template)
 	}
+	// templatesDir := "./github.com/anjunact/go-stock/web/templates/"
 	templatesDir := "./templates/"
-	layouts, err := filepath.Glob(templatesDir + "layouts/*.html")
+	layouts, err := filepath.Glob(templatesDir + "layouts/index.html")
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	widgets, err := filepath.Glob(templatesDir + "widgets/*.html")
 	if err != nil {
 		log.Fatal(err)
@@ -49,39 +55,68 @@ func init() {
 		templates[filepath.Base(layout)] = template.Must(template.ParseFiles(files...))
 	}
 	fmt.Println(layouts)
+	fmt.Println(templates)
+
 }
 func main() {
-	rootPath,_:=  filepath.Abs(".")
 	e := echo.New()
-	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			cc := &CustomContext{c}
-			return h(cc)
-		}
-	})
-	e.GET("/", func(c echo.Context) error {
-		cc := c.(*CustomContext)
-		cc.Foo()
-		cc.Bar()
-		return cc.String(200, "OK")
-	})
+	// e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
+	// 	return func(c echo.Context) error {
+	// 		cc := &CustomContext{c}
+	// 		return h(cc)
+	// 	}
+	// })
+	// e.GET("/", func(c echo.Context) error {
+	// 	cc := c.(*CustomContext)
+	// 	cc.Foo()
+	// 	cc.Bar()
+	// 	return cc.String(200, "OK")
+	// })
+	templatesDir := "./templates/"
+	layouts, err := filepath.Glob(templatesDir + "*.html")
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	widgets, err := filepath.Glob(templatesDir + "widgets/*.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	files := append(widgets, layouts...)
+	fmt.Println(files)
 	t := &Template{
-		templates: template.Must(template.ParseGlob(rootPath+"/templates/*.html")),
+		templates: template.Must(template.ParseFiles(files...)),
+		// templates: template.Must(template.ParseFiles(files...))，
 	}
 	e.Renderer = t
 	e.GET("/stocks/:page", Stocks)
 
-	e.Static("/static", rootPath+"/public")
-	e.File("/",rootPath+"/public/index.html")
+	e.Static("/static", "public")
+	e.File("/", "public/index.html")
 	e.Logger.Fatal(e.Start(":1323"))
 }
 func Stocks(c echo.Context) error {
 	page := c.Param("page")
-	pageInt,_  := strconv.Atoi(page)
-	stocks ,err := models.Stocks(pageInt,10)
-	if err !=nil{
+	pageInt, _ := strconv.Atoi(page)
+	pageSize := 10
+	stocks, err := models.Stocks(pageInt, pageSize)
+	if err != nil {
 		log.Print(err)
 	}
-	return c.Render(http.StatusOK, "stocks", stocks)
+	data := map[string]interface{}{}
+	data["stocks"] = stocks
+	pagination := map[string]interface{}{}
+
+	stock := models.Stock{}
+	count := stock.Count()
+	urls := []string{}
+	for i := 1; i < count/pageSize; i++ {
+		urls = append(urls, strconv.Itoa(i))
+	}
+	pagination["urls"] = urls
+	pagination["page"] = page
+
+	data["pagination"] = pagination
+
+	return c.Render(http.StatusOK, "stocks", data)
 }

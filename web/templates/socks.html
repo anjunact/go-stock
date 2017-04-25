@@ -1,0 +1,34 @@
+{{define "stocks"}} {{template "header"}}
+<div class="panel panel-default">
+    <!-- Default panel contents -->
+    <div class="panel-heading"></div>
+    <div class="panel-body">
+        <!-- Table -->
+        <table class="table">
+            <tr>
+                <td>ID</td>
+                <td>name</td>
+                <td>code</td>
+                <td>price</td>
+                <td>updated</td>
+            </tr>
+            {{ range $k, $v := .stocks }}
+            <tr>
+                <td>{{ $v.Id }}</td>
+                <td>{{ $v.Name }}</td>
+                <td>{{ $v.Code }}</td>
+                <td>{{ $v.Price }}</td>
+                <td>{{ $v.Updated }}</td>
+            </tr>
+            {{ end }}
+        </table>
+        {{template "pagination" .pagination}}
+    </div>
+    <div class="panel-footer">
+
+    </div>
+
+</div>
+
+
+{{template "footer"}} {{end}}

@@ -71,6 +71,17 @@ func (stock *Stock) Save()(err error) {
 	}
 	return
 }
+func (stock *Stock)Count()(count int)  {
+	statement := "select count(id) from stocks"
+	stmt, err := Db.Prepare(statement)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	defer stmt.Close()
+	stmt.QueryRow().Scan(&count)
+	return
+}
 func (stock *Stock) Get(code string) ( rs *Stock, err error) {
 	statement := "select id, name,code,price,updated from stocks where code=$1"
 	stmt, err := Db.Prepare(statement)
