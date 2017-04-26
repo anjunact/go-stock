@@ -109,8 +109,8 @@ func Stocks(c echo.Context) error {
 
 	stock := models.Stock{}
 	count := stock.Count()
-	p := utils.New(count, pageInt, pageSize)
-
+	fmt.Println(count)
+	p := utils.NewPaginater(count, pageInt, pageSize)
 	data["p"] = p
 	fmt.Printf("%+v\n", p)
 

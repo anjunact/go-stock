@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
-	"math"
+
 )
 
 func main(){
-  fmt.Println(1361/10)
-	v := math.Ceil(1361/10)
-	fmt.Println(v)
+	ar := []int{}
+	for i :=0 ; i<100 ; i++ {
+	 	ar = append(ar,i)
+	}
+	fmt.Println(ar)
 }
 
