@@ -24,15 +24,22 @@ func init() {
 		panic(err)
 	}
 }
-func Stocks(page int, pageSize int) (stocks []Stock, err error) {
+func Stocks(page int, pageSize int,params  map[string]interface{}) (stocks []Stock, err error) {
 	if page <= 0 {
 		page = 1
 	}
 	offset := (page - 1) * pageSize
 	fmt.Printf("%v,%v", offset, page)
-	q := db.NewQuery("select id, name,code,price,updated from stocks offset {:offset}  limit {:pageSize}")
+	contitions := "where 1 "
+	var bindParams dbx.Params = dbx.Params{"offset": offset,"pageSize":pageSize}
+	if params["code"] !=nil{
+		contitions += " and code=:code"
+		bindParams["code"] = params["code"]
+	}
+	q := db.NewQuery("select id, name,code,price,updated from stocks "+contitions+" offset {:offset}  limit {:pageSize}")
+
 	defer q.Close()
-	q.Bind(dbx.Params{"offset": offset,"pageSize":pageSize})
+	q.Bind(bindParams)
 	q.All(&stocks)
 	return
 }

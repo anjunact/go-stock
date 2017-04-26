@@ -1,7 +1,17 @@
 {{define "stocks"}} {{template "header"}}
 <div class="panel panel-default">
     <!-- Default panel contents -->
-    <div class="panel-heading"></div>
+    <div class="panel-heading">
+        <form >
+            <div class="input-group">
+
+                <input type="text" class="form-control" placeholder="code" aria-describedby="basic-addon1" name="code">
+                <span class="input-group-btn">
+        <button class="btn btn-default" type="submit">Go!</button>
+      </span>
+            </div>
+        </form>
+    </div>
     <div class="panel-body">
         <!-- Table -->
         <table class="table">

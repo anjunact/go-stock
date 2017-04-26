@@ -12,6 +12,7 @@ import (
 	"github.com/anjunact/go-stock/web/uitls"
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
+	"github.com/labstack/echo/middleware"
 )
 
 type CustomContext struct {
@@ -61,6 +62,7 @@ func init() {
 }
 func main() {
 	e := echo.New()
+	e.Use(middleware.Logger())
 	// e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 	// 	return func(c echo.Context) error {
 	// 		cc := &CustomContext{c}
@@ -98,9 +100,12 @@ func main() {
 }
 func Stocks(c echo.Context) error {
 	page := c.Param("page")
+	code := c.QueryParam("code")
 	pageInt, _ := strconv.Atoi(page)
 	pageSize := 10
-	stocks, err := models.Stocks(pageInt, pageSize)
+	params := map[string]interface{}{ "code":code}
+fmt.Printf("%+v",params)
+	stocks, err := models.Stocks(pageInt, pageSize,params)
 	if err != nil {
 		log.Print(err)
 	}
