@@ -1,17 +1,13 @@
 package main
 
 import (
-	"path/filepath"
 	"fmt"
+	"math"
 )
 
 func main(){
-	 files,err := filepath.Glob(".")
-	if err != nil{
-		fmt.Println(err)
-	}
-	for _,f := range files{
-		fmt.Println(f)
-	}
+  fmt.Println(1361/10)
+	v := math.Ceil(1361/10)
+	fmt.Println(v)
 }
 

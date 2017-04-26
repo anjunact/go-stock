@@ -1,38 +1,44 @@
 package models
 
 import (
-	"time"
 	"database/sql"
+	"time"
 
 	_ "github.com/lib/pq"
 
 	"fmt"
 )
 
-type  Stock struct {
-	Id  int
-	Name string
-	Code string
-	Price float64
+type Stock struct {
+	Id      int
+	Name    string
+	Code    string
+	Price   float64
 	Updated time.Time
 }
+
 var Db *sql.DB
-func  init()  {
+
+func init() {
 	var err error
 	Db, err = sql.Open("postgres", "user=stock dbname=stock password=stock sslmode=disable")
 	if err != nil {
 		panic(err)
 	}
 }
-func Stocks(page int,pageSize int) (stocks []Stock, err error) {
-	offset := page*pageSize
-	rows, err := Db.Query("select id, name,code,price,updated from stocks limit $1 offset $2", pageSize,offset)
+func Stocks(page int, pageSize int) (stocks []Stock, err error) {
+	if page <= 0 {
+		page = 1
+	}
+	offset := (page - 1) * pageSize
+	fmt.Printf("%v,%v", offset, page)
+	rows, err := Db.Query("select id, name,code,price,updated from stocks offset $1  limit $2", offset, pageSize)
 	if err != nil {
 		return
 	}
 	for rows.Next() {
 		stock := Stock{}
-		err = rows.Scan(&stock.Id, &stock.Name, &stock.Code,&stock.Price,&stock.Updated)
+		err = rows.Scan(&stock.Id, &stock.Name, &stock.Code, &stock.Price, &stock.Updated)
 		if err != nil {
 			return
 		}
@@ -44,7 +50,7 @@ func Stocks(page int,pageSize int) (stocks []Stock, err error) {
 
 func GetStock(code string) (stock Stock, err error) {
 	stock = Stock{}
-	err = Db.QueryRow("select id, name, code,price,updated from stocks where code = $1", code).Scan(&stock.Id, &stock.Name, &stock.Code,&stock.Price,&stock.Updated)
+	err = Db.QueryRow("select id, name, code,price,updated from stocks where code = $1", code).Scan(&stock.Id, &stock.Name, &stock.Code, &stock.Price, &stock.Updated)
 	return
 }
 func (stock *Stock) Create() (err error) {
@@ -54,24 +60,24 @@ func (stock *Stock) Create() (err error) {
 		return
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow( stock.Name,stock.Code,stock.Price).Scan(&stock.Id)
+	err = stmt.QueryRow(stock.Name, stock.Code, stock.Price).Scan(&stock.Id)
 	return
 }
 
 func (stock *Stock) Update() (err error) {
-	_, err = Db.Exec("update stocks set price = $2,name=$3,updated=$4 where id = $1", stock.Id, stock.Price,stock.Name,time.Now())
+	_, err = Db.Exec("update stocks set price = $2,name=$3,updated=$4 where id = $1", stock.Id, stock.Price, stock.Name, time.Now())
 	return
 }
-func (stock *Stock) Save()(err error) {
-	s,_ := stock.Get(stock.Code)
+func (stock *Stock) Save() (err error) {
+	s, _ := stock.Get(stock.Code)
 	if s.Code == stock.Code {
 		stock.Update()
-	}else{
+	} else {
 		stock.Create()
 	}
 	return
 }
-func (stock *Stock)Count()(count int)  {
+func (stock *Stock) Count() (count int) {
 	statement := "select count(id) from stocks"
 	stmt, err := Db.Prepare(statement)
 	if err != nil {
@@ -82,7 +88,7 @@ func (stock *Stock)Count()(count int)  {
 	stmt.QueryRow().Scan(&count)
 	return
 }
-func (stock *Stock) Get(code string) ( rs *Stock, err error) {
+func (stock *Stock) Get(code string) (rs *Stock, err error) {
 	statement := "select id, name,code,price,updated from stocks where code=$1"
 	stmt, err := Db.Prepare(statement)
 	if err != nil {
@@ -91,9 +97,9 @@ func (stock *Stock) Get(code string) ( rs *Stock, err error) {
 	}
 	defer stmt.Close()
 	stock1 := Stock{}
-	stmt.QueryRow(code).Scan(&stock1.Id,&stock1.Name,&stock1.Code,&stock1.Price,&stock1.Updated)
+	stmt.QueryRow(code).Scan(&stock1.Id, &stock1.Name, &stock1.Code, &stock1.Price, &stock1.Updated)
 	rs = &stock1
-        return
+	return
 }
 func (stock *Stock) Delete() (err error) {
 	_, err = Db.Exec("delete from stocks where id = $1", stock.Id)

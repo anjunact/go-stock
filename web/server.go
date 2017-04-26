@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/anjunact/go-stock/models"
+	"github.com/anjunact/go-stock/web/uitls"
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
 )
@@ -105,18 +106,13 @@ func Stocks(c echo.Context) error {
 	}
 	data := map[string]interface{}{}
 	data["stocks"] = stocks
-	pagination := map[string]interface{}{}
 
 	stock := models.Stock{}
 	count := stock.Count()
-	urls := []string{}
-	for i := 1; i < count/pageSize; i++ {
-		urls = append(urls, strconv.Itoa(i))
-	}
-	pagination["urls"] = urls
-	pagination["page"] = page
+	p := utils.New(count, pageInt, pageSize)
 
-	data["pagination"] = pagination
+	data["p"] = p
+	fmt.Printf("%+v\n", p)
 
 	return c.Render(http.StatusOK, "stocks", data)
 }
