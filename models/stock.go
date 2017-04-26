@@ -65,6 +65,7 @@ func (stock *Stock) Save() (err error) {
 	s := stock.Get(stock.Code)
 	if s !=nil {
 		stock.Update()
+		fmt.Printf("db:%+v",stock)
 	} else {
 		stock.Create()
 	}
